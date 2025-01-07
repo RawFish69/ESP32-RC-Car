@@ -57,11 +57,18 @@ The interface includes:
 *3D CAD model of chasis*
 
 ### Vehicle Build
-![RC Car Build](docs/car.jpg)
+![RC Car Omni Drive](docs/omni_build.jpg)
+*Omni version build*
+
+![RC Car Default](docs/car.jpg)
+*Default version build*
 
 ### Circuit Wiring
-![Circuit Schematic](docs/circuit.jpg)
-*Actual wiring*
+![Omni Circuit Schematic](docs/omni_wiring.jpg)
+*Omni version wiring*
+
+![Default Circuit Schematic](docs/circuit.jpg)
+*Defualt version wiring*
 
 ## Technical Details
 
