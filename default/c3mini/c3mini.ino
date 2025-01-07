@@ -1,3 +1,9 @@
+/*
+    Default Mode
+    ESP32C3-Mini
+    Front wheel differential drive
+*/
+
 #include <WiFi.h>
 #include <WebServer.h>
 #include "web_interface.h"
