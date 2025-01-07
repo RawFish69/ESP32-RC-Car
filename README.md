@@ -19,19 +19,20 @@ A browser-based RC car project powered by ESP32-C3, featuring real-time control 
 2. Power up the car
 3. Connect to Wi-Fi network "Web RC Car"
 4. Navigate to `192.168.1.101` in your browser
-5. Start driving!
 
 ## Hardware Requirements
 
 - ESP32-C3-Mini development board
 - Dual H-Bridge motor driver
-- 2x DC motors with wheels
+- 2x / 4x DC motors with wheels 
 - LiPo battery or AA batteries
 - Chassis (3D printed, Laser Cut parts, etc)
 - Basic electronic components
+- Soldering is optional
 
 ## Pin Configuration
 
+### Default Version (2-Wheel Drive)
 | Pin | Function |
 |-----|----------|
 | 7   | Left Motor PWM |
@@ -40,6 +41,14 @@ A browser-based RC car project powered by ESP32-C3, featuring real-time control 
 | 9   | Left Motor Reverse |
 | 4   | Right Motor Forward |
 | 3   | Right Motor Reverse |
+
+### Omni Version (4-Wheel Drive)
+| Motor          | Enable Pin (PWM) | Direction 1 | Direction 2 |
+|----------------|------------------|-------------|-------------|
+| Left Front     | 5               | 6           | 7           |
+| Right Front    | 20              | 21          | 3           |
+| Left Back      | 8               | 9           | 10          |
+| Right Back     | 2               | 1           | 0           |
 
 ## Web Interface
 
