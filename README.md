@@ -1,17 +1,37 @@
-# ESP32-C3 Web-Controlled RC Car
+# ESP32 RC Car
 
-A browser-based RC car project powered by ESP32-C3, featuring real-time control through an intuitive web interface with virtual joystick controls.
+[![Arduino](https://img.shields.io/badge/Arduino-IDE-00979D.svg?style=for-the-badge&logo=Arduino&logoColor=white)](https://www.arduino.cc/)
+[![ESP32](https://img.shields.io/badge/ESP32-C3-E7352C.svg?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+> A browser-based RC car project powered by ESP32-C3, featuring real-time control through an intuitive web interface with virtual joystick controls. Available in both single-board and dual-board configurations.
+
+---
+
+## Vehicle Builds
+
+### Omni-Drive Version
+<img src="docs/omni_build.jpg" width="400" alt="RC Car Omni Drive">
+*4-wheel omni-directional drive configuration*
+
+### Standard Version
+<img src="docs/car.jpg" width="400" alt="RC Car Default">
+*2-wheel differential drive configuration*
 
 ## Features
 
+### Core Features
 - Browser-based control interface
 - Virtual joystick with touch/mouse support
 - Wi-Fi AP mode for direct connection
 - Real-time motor control
-- Individual wheel speed tuning
-- Live status monitoring
 - Precision turn control
 - Emergency stop function
+
+### Advanced Features
+- Individual wheel speed tuning
+- Live status monitoring
+- Dual-board long-range option
+- ESP-NOW peer-to-peer support
 
 ## Quick Start
 
@@ -19,6 +39,58 @@ A browser-based RC car project powered by ESP32-C3, featuring real-time control 
 2. Power up the car
 3. Connect to Wi-Fi network "Web RC Car"
 4. Navigate to `192.168.1.101` in your browser
+
+## Architecture
+
+### Single-Board Version
+```
+┌─────────────┐     ┌──────────────┐     ┌───────────┐
+│  Browser    │ WS  │   ESP32-C3   │ PWM │   Motors  │
+│  Interface  │◄───►│  Web Server  │────►│   Driver  │
+└─────────────┘     └──────────────┘     └───────────┘
+```
+
+### Dual-Board Version
+```
+┌─────────────┐     ┌──────────────┐     ┌──────────────┐     ┌───────────┐
+│  Browser    │ WS  │   Control    │     │    Drive     │ PWM │   Motors  │
+│  Interface  │◄───►│    Board     │◄───►│    Board     │────►│   Driver  │
+└─────────────┘     └──────────────┘     └──────────────┘     └───────────┘
+                          WiFi              ESP-NOW
+```
+
+### Component Overview
+
+1. **Web Interface** (`web_interface.cpp`)
+    - HTML/CSS layout
+    - JavaScript joystick controls
+    - WebSocket client
+    - Real-time status display
+    - UI event handling
+
+2. **Control Board** (`control.ino`)
+    - Web server hosting
+    - User interface handling
+    - ESP-NOW transmitter
+    - OLED display updates
+    - Connection management
+
+3. **Drive Board** (`drive.ino`)
+    - ESP-NOW receiver
+    - Motor control logic
+    - Failsafe handling
+    - Automatic reconnection
+    - Status monitoring
+
+### Communication Flow
+```
+Browser (Web Interface) → WebSocket → Control Board → ESP-NOW → Drive Board → Motors
+```
+
+### Data Flow
+```
+User Input → JSON Command → ESP-NOW Packet → Motor Signal → Physical Movement
+```
 
 ## Hardware Requirements
 
@@ -50,6 +122,33 @@ A browser-based RC car project powered by ESP32-C3, featuring real-time control 
 | Left Back      | 8               | 9           | 10          |
 | Right Back     | 2               | 1           | 0           |
 
+## Dual-Board Version
+
+An alternative version using two ESP32 boards with ESP-NOW communication:
+
+### Features
+- Long-range control (hundreds of meters)
+- Direct peer-to-peer communication
+- No WiFi network required
+- Split control and drive functionality
+- More reliable communication
+
+### Components
+- Control Board: Handles web interface and user input
+- Drive Board: Controls motors and receives commands
+- ESP-NOW protocol for board-to-board communication
+
+### Benefits
+- Separation of concerns
+- Extended range capability
+- Reduced latency
+- More reliable motor control
+- Independent WiFi and control systems
+
+The code for this version is in:
+- `control.ino`: Web interface and ESP-NOW transmitter
+- `drive.ino`: Motor control and ESP-NOW receiver
+
 ## Web Interface
 
 The interface includes:
@@ -59,25 +158,22 @@ The interface includes:
 - Fine-tuning controls
 - Status monitoring panel
 
-## Images
+## Supporting Documentation
 
-### CAD Design
-![CAD Model](docs/chasis.png)
-*3D CAD model of chasis*
+### Design Files
+<img src="docs/chasis.png" width="400" alt="CAD Model">
+*3D CAD model of chassis*
 
-### Vehicle Build
-![RC Car Omni Drive](docs/omni_build.jpg)
-*Omni version build*
+### Control Display
+<img src="docs/control_oled.jpg" width="300" alt="OLED Display">
+*OLED status display on control board*
 
-![RC Car Default](docs/car.jpg)
-*Default version build*
-
-### Circuit Wiring
-![Omni Circuit Schematic](docs/omni_wiring.jpg)
+### Wiring Diagrams
+<img src="docs/omni_wiring.jpg" width="400" alt="Omni Circuit Schematic">
 *Omni version wiring*
 
-![Default Circuit Schematic](docs/circuit.jpg)
-*Defualt version wiring*
+<img src="docs/circuit.jpg" width="400" alt="Default Circuit Schematic">
+*Default version wiring*
 
 ## Technical Details
 

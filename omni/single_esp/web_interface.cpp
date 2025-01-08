@@ -167,16 +167,9 @@ const char INDEX_HTML[] = R"=====(
 </head>
 <body>
   <div class="container">
-    <h1>ESP32 RC Car</h1>
-
-    <!-- Two Joysticks side-by-side -->
-    <div class="joysticks-row">
-      <div class="joystick-container">
-        <canvas id="joystick" width="300" height="300"></canvas>
-      </div>
-      <div class="joystick-container">
-        <canvas id="joystick2" width="300" height="300"></canvas>
-      </div>
+    <!-- Single Joystick in the center -->
+    <div class="joystick-container">
+      <canvas id="joystick" width="300" height="300"></canvas>
     </div>
 
     <!-- Controls layout -->
@@ -232,7 +225,6 @@ const char INDEX_HTML[] = R"=====(
     let knobX = centerX;
     let knobY = centerY;
     let dragging = false;
-    let activeJoystick = 0; // 0=none, 1=left, 2=right
 
     drawJoystick(knobX, knobY);
 
@@ -264,25 +256,16 @@ const char INDEX_HTML[] = R"=====(
 
     function startDrag(evt) {
       evt.preventDefault();
-      if (activeJoystick === 2) return; // If right joystick is active, block
-      activeJoystick = 1;
       dragging = true;
-      // Reset second joystick
-      knob2X = center2X;
-      knob2Y = center2Y;
-      drawJoystick2(knob2X, knob2Y);
       moveKnobByEvent(evt);
     }
     function drag(evt) {
-      if (!dragging || activeJoystick !== 1) return;
+      if (!dragging) return;
       evt.preventDefault();
       moveKnobByEvent(evt);
     }
     function endDrag(evt) {
       evt.preventDefault();
-      if (activeJoystick === 1) {
-        activeJoystick = 0;
-      }
       dragging = false;
       // Snap back
       knobX = centerX;
@@ -358,106 +341,6 @@ const char INDEX_HTML[] = R"=====(
 
     function mapRange(x, inMin, inMax, outMin, outMax) {
       return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-    }
-
-    /********************************
-     *       JOYSTICK #2 (right)    *
-     ********************************/
-    const canvas2 = document.getElementById('joystick2');
-    const ctx2 = canvas2.getContext('2d');
-    let center2X = canvas2.width / 2;
-    let center2Y = canvas2.height / 2;
-    let knob2Radius = 30;
-    let outer2Radius = 140;
-    let dragging2 = false;
-    let knob2X = center2X;
-    let knob2Y = center2Y;
-
-    drawJoystick2(knob2X, knob2Y);
-
-    canvas2.addEventListener('mousedown', startDrag2);
-    canvas2.addEventListener('mousemove', drag2);
-    canvas2.addEventListener('mouseup', endDrag2);
-    canvas2.addEventListener('mouseleave', endDrag2);
-
-    canvas2.addEventListener('touchstart', startDrag2, {passive:false});
-    canvas2.addEventListener('touchmove', drag2, {passive:false});
-    canvas2.addEventListener('touchend', endDrag2, {passive:false});
-    canvas2.addEventListener('touchcancel', endDrag2, {passive:false});
-
-    function drawJoystick2(x, y) {
-      ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-      ctx2.beginPath();
-      ctx2.arc(center2X, center2Y, outer2Radius, 0, Math.PI * 2);
-      ctx2.fillStyle = '#383838';
-      ctx2.fill();
-
-      ctx2.beginPath();
-      ctx2.arc(x, y, knob2Radius, 0, Math.PI * 2);
-      ctx2.fillStyle = '#00ee99';
-      ctx2.fill();
-    }
-
-    function startDrag2(evt) {
-      evt.preventDefault();
-      if (activeJoystick === 1) return; // if left joystick in use
-      activeJoystick = 2;
-      dragging2 = true;
-      // Reset first joystick
-      knobX = centerX;
-      knobY = centerY;
-      drawJoystick(knobX, knobY);
-      moveKnobByEvent2(evt);
-    }
-    function drag2(evt) {
-      if (!dragging2 || activeJoystick !== 2) return;
-      evt.preventDefault();
-      moveKnobByEvent2(evt);
-    }
-    function endDrag2(evt) {
-      evt.preventDefault();
-      if (activeJoystick === 2) {
-        activeJoystick = 0;
-      }
-      dragging2 = false;
-      // Snap back
-      knob2X = center2X;
-      knob2Y = center2Y;
-      drawJoystick2(knob2X, knob2Y);
-      // Send 0
-      fetch('/setMotor?x=0&y=0&rotate=0').catch(err => console.error(err));
-    }
-
-    function getMousePos2(evt) {
-      let rect = canvas2.getBoundingClientRect();
-      if (evt.touches) {
-        return {
-          x: evt.touches[0].clientX - rect.left,
-          y: evt.touches[0].clientY - rect.top
-        };
-      } else {
-        return {
-          x: evt.clientX - rect.left,
-          y: evt.clientY - rect.top
-        };
-      }
-    }
-
-    function moveKnobByEvent2(evt) {
-      let pos = getMousePos2(evt);
-      let dx = pos.x - center2X;
-      let dy = pos.y - center2Y;
-      let dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist > outer2Radius) {
-        let angle = Math.atan2(dy, dx);
-        pos.x = center2X + outer2Radius * Math.cos(angle);
-        pos.y = center2Y + outer2Radius * Math.sin(angle);
-      }
-      knob2X = pos.x;
-      knob2Y = pos.y;
-      drawJoystick2(knob2X, knob2Y);
-      // If you want to interpret these as strafe vs rotate, do it here
-      // For now, it just sets some joystick position.
     }
 
     /********************************
