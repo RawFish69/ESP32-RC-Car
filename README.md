@@ -7,16 +7,6 @@
 
 ---
 
-## Vehicle Builds
-
-### Omni-Drive Version
-<img src="docs/omni_build.jpg" width="400" alt="RC Car Omni Drive">
-*4-wheel omni-directional drive configuration*
-
-### Standard Version
-<img src="docs/car.jpg" width="400" alt="RC Car Default">
-*2-wheel differential drive configuration*
-
 ## Features
 
 ### Core Features
@@ -101,6 +91,21 @@ User Input → JSON Command → ESP-NOW Packet → Motor Signal → Physical Mov
 - Chassis (3D printed, Laser Cut parts, etc)
 - Basic electronic components
 - Soldering is optional
+
+## Vehicle Builds
+
+<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <div style="flex: 1; margin-right: 10px;">
+        <h3>Omni-Drive Version</h3>
+        <img src="docs/omni_build.jpg" width="100%" alt="RC Car Omni Drive">
+        <em>4-wheel omni-directional drive configuration</em>
+    </div>
+    <div style="flex: 1; margin-left: 10px;">
+        <h3>Standard Version</h3>
+        <img src="docs/car.jpg" width="100%" alt="RC Car Default">
+        <em>2-wheel differential drive configuration</em>
+    </div>
+</div>
 
 ## Pin Configuration
 
