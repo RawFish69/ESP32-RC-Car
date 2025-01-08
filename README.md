@@ -94,18 +94,24 @@ User Input → JSON Command → ESP-NOW Packet → Motor Signal → Physical Mov
 
 ## Vehicle Builds
 
-<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-    <div style="flex: 1; margin-right: 10px;">
-        <h3>Omni-Drive Version</h3>
-        <img src="docs/omni_build.jpg" width="100%" alt="RC Car Omni Drive">
-        <em>4-wheel omni-directional drive configuration</em>
-    </div>
-    <div style="flex: 1; margin-left: 10px;">
-        <h3>Standard Version</h3>
-        <img src="docs/car.jpg" width="100%" alt="RC Car Default">
-        <em>2-wheel differential drive configuration</em>
-    </div>
-</div>
+<table>
+<tr>
+<td width="50%">
+
+### Omni-Drive Version
+<img src="docs/omni_build.jpg" alt="RC Car Omni Drive">
+*4-wheel omni-directional drive configuration*
+
+</td>
+<td width="50%">
+
+### Standard Version
+<img src="docs/car.jpg" alt="RC Car Default">
+*2-wheel differential drive configuration*
+
+</td>
+</tr>
+</table>
 
 ## Pin Configuration
 
