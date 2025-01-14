@@ -1,3 +1,9 @@
+/*
+  Dual ESP32 RC Car Control Board
+  Control Board Code
+  Author: RawFish69
+*/
+
 #include <WiFi.h>
 #include <WebServer.h>
 #include <esp_wifi.h>

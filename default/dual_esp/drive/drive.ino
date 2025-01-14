@@ -1,3 +1,9 @@
+/*
+  Dual ESP32 RC Car - Drive Board
+  Drive Board Code
+  Author: RawFish69
+*/
+
 #include <WiFi.h>
 #include <esp_now.h>
 #include <esp_wifi.h>
@@ -8,7 +14,6 @@
 #define MOTOR_MIN_PWM 300
 #define MOTOR_MAX_PWM 1023
 
-// Pin definitions changed to match c3.ino:
 const int motor1In1 = 8;    // IN1 on L298
 const int motor1In2 = 7;    // IN2 on L298
 const int motor2In1 = 6;    // IN3 on L298
@@ -16,40 +21,32 @@ const int motor2In2 = 5;    // IN4 on L298
 const int enablePin1 = 10;  // ENA on L298
 const int enablePin2 = 4;   // ENB on L298
 
-// Desired PWM and direction
 int desiredLeftPWM = 0;
 int desiredRightPWM = 0;
-int desiredLeftDirection = 1; // 1 = forward, 0 = reverse
-int desiredRightDirection = 1; // 1 = forward, 0 = reverse
+int desiredLeftDirection = 1;
+int desiredRightDirection = 1;
 
-// Tuning multipliers
 volatile float leftTune = 1.0;
 volatile float rightTune = 1.0;
 
 bool emergencyStopActive = false;
 
-// Control board mac address
 uint8_t CONTROL_BOARD_MAC[] = {0xE4, 0xB3, 0x23, 0xD2, 0xD1, 0x5C};
 
-// 15s no packets => EStop + reboot
 static const unsigned long NO_PACKET_TIMEOUT_MS = 15000;
 
-// LED and motion state tracking
 volatile int currentSpeed = 0;
 volatile float currentTurnRate = 0;
 unsigned long lastLedUpdate = 0;
 
-// ESPNOW housekeeping
 bool firstPacketReceived = false;
 unsigned long lastPacketMillis = 0;
 
-// Forward declarations
 void parseEspNowMessage(const String& msg);
 void handleEmergencyStop();
 void handleTuning(float lt, float rt);
 void updateMotorSignals();
 
-// ESPNOW callback for receiving data
 void onDataRecv(const esp_now_recv_info_t* info, const uint8_t *data, int data_len) {
   if (!firstPacketReceived) {
     firstPacketReceived = true;
@@ -61,7 +58,6 @@ void onDataRecv(const esp_now_recv_info_t* info, const uint8_t *data, int data_l
   parseEspNowMessage(incoming);
 }
 
-// Parse incoming ESPNOW messages and route to appropriate handlers
 void parseEspNowMessage(const String& msg) {
   if (msg.equalsIgnoreCase("emergencyStop")) {
     handleEmergencyStop();
@@ -87,11 +83,9 @@ void parseEspNowMessage(const String& msg) {
     String forwardBackward = msg.substring(fbIdx + 16, (nextAmp < 0 ? msg.length() : nextAmp));
     float turnRatePercent = msg.substring(trIdx + 9).toFloat();
 
-    // Update state tracking for LED
     currentSpeed = (forwardBackward.equalsIgnoreCase("Forward")) ? speedPercent : -speedPercent;
     currentTurnRate = turnRatePercent;
 
-    // c3.ino-like logic:
     int basePWM = (speedPercent > 0) ? map((int)speedPercent, 1, 100, MOTOR_MIN_PWM, MOTOR_MAX_PWM) : 0;
     if (basePWM < MOTOR_MIN_PWM && basePWM != 0) {
       basePWM = MOTOR_MIN_PWM;
@@ -111,7 +105,6 @@ void parseEspNowMessage(const String& msg) {
   }
 }
 
-// Handle emergency stop by disabling all motors
 void handleEmergencyStop() {
   emergencyStopActive = true;
   desiredLeftPWM = 0;
@@ -127,14 +120,12 @@ void handleEmergencyStop() {
   Serial.println("[DriveBoard] EMERGENCY STOP triggered!");
 }
 
-// Update motor tuning parameters
 void handleTuning(float lt, float rt) {
   leftTune = constrain(lt, 0.5, 1.5);
   rightTune = constrain(rt, 0.5, 1.5);
   Serial.printf("[DriveBoard] Tuning => Left=%.2f, Right=%.2f\n", leftTune, rightTune);
 }
 
-// Update motor signals based on desired states
 void updateMotorSignals() {
   if (emergencyStopActive) return;
   digitalWrite(motor1In1, (desiredLeftDirection) ? HIGH : LOW);
