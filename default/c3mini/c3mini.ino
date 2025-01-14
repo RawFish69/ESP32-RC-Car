@@ -27,12 +27,12 @@ IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
 
 // Pins for ESP32C3-Mini
-const int enablePin1 = 7;  // Left motor PWM
-const int enablePin2 = 0;  // Right motor PWM
-const int motor1In1 = 8;  // Left motor forward
-const int motor1In2 = 9;  // Left motor reverse
-const int motor2In1 = 4;   // Right motor forward
-const int motor2In2 = 3;   // Right motor reverse
+const int enablePin1 = 7;  // Left motor PWM, ENA on L298
+const int enablePin2 = 0;  // Right motor PWM, ENB on L298
+const int motor1In1 = 8;   // Left motor forward, IN1 on L298
+const int motor1In2 = 9;   // Left motor reverse, IN2 on L298
+const int motor2In1 = 4;   // Right motor forward, IN3 on L298
+const int motor2In2 = 3;   // Right motor reverse, IN4 on L298
 
 // Global variables
 volatile int currentSpeed = 0;         // used for display purposes

@@ -1,6 +1,10 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include "web_interface.h"
+#include "rgb.h"
+
+// Device STA MAC Address: 68:67:25:B1:BC:8C
+// Device SoftAP MAC Address: 68:67:25:B1:BC:8D
 
 #define LEDC_RESOLUTION_BITS 10
 #define LEDC_RESOLUTION ((1 << LEDC_RESOLUTION_BITS) - 1)
@@ -8,7 +12,7 @@
 #define MOTOR_MIN_PWM 300
 #define MOTOR_MAX_PWM 1023
 
-const char* ssid = "ESP Web RC Car";
+const char* ssid = "Web RC Car";
 const char* password = "";
 
 IPAddress local_IP(192, 168, 1, 101);
@@ -17,18 +21,19 @@ IPAddress subnet(255, 255, 255, 0);
 
 WebServer server(80);
 
-const int motor1In1 = 33;   // IN1 on L298
-const int motor1In2 = 25;   // IN2 on L298
-const int motor2In1 = 26;   // IN3 on L298
-const int motor2In2 = 27;   // IN4 on L298
-const int enablePin1 = 12;  // ENA on L298
-const int enablePin2 = 14;  // ENB on L298
+const int motor1In1 = 8;   // IN1 on L298
+const int motor1In2 = 7;   // IN2 on L298
+const int motor2In1 = 6;   // IN3 on L298
+const int motor2In2 = 5;   // IN4 on L298
+const int enablePin1 = 10;  // ENA on L298
+const int enablePin2 = 4;  // ENB on L298
 
 volatile int currentSpeed = 0;
 volatile float currentTurnRate = 0;
+unsigned long lastLedUpdate = 0;
 
 volatile unsigned long serverPrevTime = 0;
-const unsigned long serverInterval = 20;
+const unsigned long serverInterval = 50;
 
 int desiredLeftPWM = 0;
 int desiredLeftDirection = 1;
@@ -38,12 +43,8 @@ int desiredRightDirection = 1;
 volatile float leftTune = 1.0;
 volatile float rightTune = 1.0;
 
-volatile int previousLeftDirection = 1;
-volatile int previousRightDirection = 1;
-
 void setup() {
   Serial.begin(115200);
-  delay(1000);
   pinMode(motor1In1, OUTPUT);
   pinMode(motor1In2, OUTPUT);
   pinMode(motor2In1, OUTPUT);
@@ -68,7 +69,9 @@ void setup() {
   server.on("/setWheelTuning", handleSetWheelTuning);
   server.on("/emergencyStop", handleEmergencyStop);
   server.on("/getStatus", handleGetStatus);
+  server.enableCORS(true);  // Add this line
   server.begin();
+  rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
 }
 
 void loop() {
@@ -76,6 +79,10 @@ void loop() {
   if (currentMillis - serverPrevTime > serverInterval) {
     server.handleClient();
     serverPrevTime = currentMillis;
+  }
+  if (currentMillis - lastLedUpdate > LED_UPDATE_INTERVAL) {
+    updateLED();
+    lastLedUpdate = currentMillis;
   }
   updateMotorSignals();
 }
@@ -103,9 +110,9 @@ void handleSetMotor() {
       desiredLeftPWM = basePWM * (1.0 + turnFactor);
       desiredRightPWM = basePWM;
     }
-    desiredLeftPWM = constrain(desiredLeftPWM, 0, MOTOR_MAX_PWM);
+    desiredLeftPWM  = constrain(desiredLeftPWM,  0, MOTOR_MAX_PWM);
     desiredRightPWM = constrain(desiredRightPWM, 0, MOTOR_MAX_PWM);
-    desiredLeftDirection = (forwardBackward == "Forward") ? 1 : 0;
+    desiredLeftDirection  = (forwardBackward == "Forward") ? 1 : 0;
     desiredRightDirection = (forwardBackward == "Forward") ? 1 : 0;
     server.send(200, "text/plain", "OK");
   } else {
@@ -145,36 +152,24 @@ void handleGetStatus() {
   float leftPWM = (float)desiredLeftPWM * leftTune;
   float rightPWM = (float)desiredRightPWM * rightTune;
   String json = "{";
-  json += "\"speed\":" + String(currentSpeed) + ",";
-  json += "\"turn\":" + String(currentTurnRate) + ",";
-  json += "\"leftPWM\":" + String((int)leftPWM) + ",";
-  json += "\"rightPWM\":" + String((int)rightPWM) + ",";
-  json += "\"leftDir\":" + String(desiredLeftDirection) + ",";
-  json += "\"rightDir\":" + String(desiredRightDirection);
+  json += "\"speed\":"      + String(currentSpeed) + ",";
+  json += "\"turn\":"       + String(currentTurnRate) + ",";
+  json += "\"leftPWM\":"    + String((int)leftPWM) + ",";
+  json += "\"rightPWM\":"   + String((int)rightPWM) + ",";
+  json += "\"leftDir\":"    + String(desiredLeftDirection) + ",";
+  json += "\"rightDir\":"   + String(desiredRightDirection);
   json += "}";
   server.send(200, "application/json", json);
 }
 
 void updateMotorSignals() {
-  // Check and handle left motor direction change
-  if (desiredLeftDirection != previousLeftDirection) {
-    delay(100); // Delay in milliseconds
-    previousLeftDirection = desiredLeftDirection;
-  }
-
-  // Check and handle right motor direction change
-  if (desiredRightDirection != previousRightDirection) {
-    delay(100); // Delay in milliseconds
-    previousRightDirection = desiredRightDirection;
-  }
-
   digitalWrite(motor1In1, desiredLeftDirection ? HIGH : LOW);
   digitalWrite(motor1In2, desiredLeftDirection ? LOW : HIGH);
   digitalWrite(motor2In1, desiredRightDirection ? HIGH : LOW);
   digitalWrite(motor2In2, desiredRightDirection ? LOW : HIGH);
-  float finalLeftPWM = desiredLeftPWM * leftTune;
+  float finalLeftPWM  = desiredLeftPWM  * leftTune;
   float finalRightPWM = desiredRightPWM * rightTune;
-  int leftOut = (int)constrain(finalLeftPWM, 0, MOTOR_MAX_PWM);
+  int leftOut  = (int)constrain(finalLeftPWM,  0, MOTOR_MAX_PWM);
   int rightOut = (int)constrain(finalRightPWM, 0, MOTOR_MAX_PWM);
   ledcWrite(enablePin1, leftOut);
   ledcWrite(enablePin2, rightOut);
