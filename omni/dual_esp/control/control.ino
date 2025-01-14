@@ -320,7 +320,7 @@ void setup()
 {
   Serial.begin(115200);
   String driveMacStr = macToString(DRIVE_BOARD_MAC);
-  Wire.begin(19, 4);
+  Wire.begin(3, 4);
   display.begin(SCREEN_ADDRESS, true);
   drawTopLine(driveMacStr);
   WiFi.onEvent(onWiFiEvent);
