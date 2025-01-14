@@ -212,30 +212,6 @@ void setMotorSimple(float speedPercent, const String& forwardBackward, float tur
 // Update motor signals based on desired states
 void updateMotorSignals() {
   if (emergencyStopActive) return;
-  if (desiredLeftDirection != lastLeftDir && lastLeftDir != -1) {
-    ledcWrite(enablePin1, 0);
-    digitalWrite(motor1In1, LOW);
-    digitalWrite(motor1In2, LOW);
-  }
-  lastLeftDir = desiredLeftDirection;
-  if (desiredRightDirection != lastRightDir && lastRightDir != -1) {
-    ledcWrite(enablePin2, 0);
-    digitalWrite(motor2In1, LOW);
-    digitalWrite(motor2In2, LOW);
-  }
-  lastRightDir = desiredRightDirection;
-  if (desiredMotor3Direction != lastMotor3Dir && lastMotor3Dir != -1) {
-    ledcWrite(enablePin3, 0);
-    digitalWrite(motor3In1, LOW);
-    digitalWrite(motor3In2, LOW);
-  }
-  lastMotor3Dir = desiredMotor3Direction;
-  if (desiredMotor4Direction != lastMotor4Dir && lastMotor4Dir != -1) {
-    ledcWrite(enablePin4, 0);
-    digitalWrite(motor4In1, LOW);
-    digitalWrite(motor4In2, LOW);
-  }
-  lastMotor4Dir = desiredMotor4Direction;
   digitalWrite(motor1In1, (desiredLeftDirection) ? HIGH : LOW);
   digitalWrite(motor1In2, (desiredLeftDirection) ? LOW : HIGH);
   digitalWrite(motor2In1, (desiredRightDirection) ? HIGH : LOW);
