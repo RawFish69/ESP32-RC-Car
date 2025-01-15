@@ -134,18 +134,11 @@ User Input → JSON Command → ESP-NOW Packet → Motor Signal → Physical Mov
 
 ## Master Controller
 
-<table>
-<tr>
-<td width="50%">
+<img src="docs/demo.gif" width="100%" alt="RC Car Demo">
+
 The file <code>master_control.ino</code> manages both Omni and Default modes
 through ESP-NOW communication. Default mode now also supports direct
 ESP-NOW control to the drive board.
-</td>
-<td width="50%">
-<img src="docs/demo.gif" width="100%" alt="RC Car Demo">
-</td>
-</tr>
-</table>
 
 ## Hardware Requirements
 
