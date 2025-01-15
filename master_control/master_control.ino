@@ -2,12 +2,15 @@
   ESP32 RC Car Control
   Switches between Default (2-wheel) and Omni (4-wheel) modes.
   Author: RawFish69
-*/
 
-//
-// Master Controller: Handles both Omni and Default mode control logic.
-// Now includes ESP-NOW support for Default mode as well.
-//
+  Supported features:
+    - Switch between Default and Omni modes
+    - Control car movement in both modes
+    - Emergency stop
+    - Tune left and right wheel speeds
+    - Monitor status and commands on OLED display
+    - Web interface for control
+*/
 
 #include <WiFi.h>
 #include <WebServer.h>
@@ -21,13 +24,16 @@
 
 #define MODE_SWITCH_PIN 5
 
+// Replace these MAC addresses with the ones you want to use
+// These are the MAC addresses of my ESP32 boards
+// You can use the mac_reader.ino to get the MAC addresses of your boards
 uint8_t DEFAULT_DRIVE_MAC[6] = {0x68, 0x67, 0x25, 0xB1, 0xBC, 0x8C};
-uint8_t OMNI_DRIVE_MAC[6]    = {0xE4, 0xB3, 0x23, 0xD4, 0xEC, 0x14};
+uint8_t OMNI_DRIVE_MAC[6] = {0xE4, 0xB3, 0x23, 0xD4, 0xEC, 0x14};
 uint8_t DRIVE_BOARD_MAC[6];
 
 const char* ssid_default = "RC Default Mode";
-const char* ssid_omni    = "RC Omni Mode";
-const char* password     = "";
+const char* ssid_omni = "RC Omni Mode";
+const char* password = "";
 
 IPAddress local_IP(192, 168, 1, 101);
 IPAddress gateway(192, 168, 1, 1);
@@ -35,7 +41,7 @@ IPAddress subnet(255, 255, 255, 0);
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
-#define OLED_RESET    -1
+#define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
 Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -44,23 +50,23 @@ WebServer server(80);
 
 enum CarMode { MODE_DEFAULT, MODE_OMNI };
 CarMode currentMode = MODE_DEFAULT;
-CarMode lastMode    = MODE_DEFAULT;
-bool   firstSetup   = true;
+CarMode lastMode = MODE_DEFAULT;
+bool firstSetup = true;
 
-String g_peerStatus     = "N/A";
-String g_wifiStatus     = "N/A";
-String g_serverStatus   = "N/A";
-String g_finalStatus    = "Starting...";
-int    g_clientCount    = 0;
+String g_peerStatus = "N/A";
+String g_wifiStatus = "N/A";
+String g_serverStatus = "N/A";
+String g_finalStatus = "Starting...";
+int g_clientCount = 0;
 
 enum CmdType { CMD_OMNI, CMD_SIMPLE, CMD_TUNE, CMD_ESTOP, CMD_NONE };
 CmdType lastModeCmd = CMD_NONE;
 
 float lastX = 0, lastY = 0, lastR = 0;
-float lastSpeed=0, lastTurn=0;
-String lastDir="";
-float lastLeft=1.0, lastRight=1.0;
-String lastDelivery="Sending...";
+float lastSpeed = 0, lastTurn = 0;
+String lastDir = "";
+float lastLeft = 1.0, lastRight = 1.0;
+String lastDelivery = "Sending...";
 static unsigned long lastSendTime = 0;
 
 void onWiFiEvent(WiFiEvent_t event) {
@@ -225,15 +231,15 @@ void showOmniCommand(float x, float y, float r) {
 void showSimpleCommand(float spd, const String &dir, float trn) {
   lastModeCmd = CMD_SIMPLE;
   lastSpeed = spd;
-  lastDir   = dir;
-  lastTurn  = trn;
+  lastDir = dir;
+  lastTurn = trn;
   lastDelivery = "Sending...";
   clearAndDrawCommand();
 }
 
 void showTuneCommand(float lt, float rt) {
   lastModeCmd = CMD_TUNE;
-  lastLeft  = lt;
+  lastLeft = lt;
   lastRight = rt;
   lastDelivery = "Sending...";
   clearAndDrawCommand();
@@ -260,7 +266,7 @@ void handleSetMotor() {
       float yVal = server.arg("y").toFloat();
       float rVal = server.arg("rotate").toFloat();
       showOmniCommand(xVal, yVal, rVal);
-      String query = "mode=omni&x="+server.arg("x")+"&y="+server.arg("y")+"&rotate="+server.arg("rotate");
+      String query = "mode=omni&x=" + server.arg("x") + "&y=" + server.arg("y") + "&rotate=" + server.arg("rotate");
       sendEspNowMessage(query);
       server.send(200, "text/plain", "OK (Omni)");
     } else {
@@ -272,7 +278,7 @@ void handleSetMotor() {
       String dir = server.arg("forwardBackward");
       float trn = server.arg("turnRate").toFloat();
       showSimpleCommand(spd, dir, trn);
-      String query = "mode=default&speed="+server.arg("speed") + "&forwardBackward="+dir + "&turnRate="+server.arg("turnRate");
+      String query = "mode=default&speed=" + server.arg("speed") + "&forwardBackward=" + dir + "&turnRate=" + server.arg("turnRate");
       sendEspNowMessage(query);
       server.send(200, "text/plain", "OK (Default)");
     } else {
@@ -286,7 +292,7 @@ void handleSetWheelTuning() {
     float lt = server.arg("leftTune").toFloat();
     float rt = server.arg("rightTune").toFloat();
     showTuneCommand(lt, rt);
-    String query = "tune&leftTune="+server.arg("leftTune") + "&rightTune="+server.arg("rightTune");
+    String query = "tune&leftTune=" + server.arg("leftTune") + "&rightTune=" + server.arg("rightTune");
     sendEspNowMessage(query);
     server.send(200, "text/plain", "Tuning updated");
   } else {
