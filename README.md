@@ -2,6 +2,9 @@
 
 [![Arduino](https://img.shields.io/badge/Arduino-IDE-00979D.svg?style=for-the-badge&logo=Arduino&logoColor=white)](https://www.arduino.cc/)
 [![ESP32](https://img.shields.io/badge/ESP32-C3-E7352C.svg?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/)
+[![ESP32](https://img.shields.io/badge/ESP32-any-000000.svg?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/en/products/modules/esp32)
+[![ESP-NOW](https://img.shields.io/badge/ESP--NOW-Protocol-green.svg?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/en/products/software/esp-now/overview)
+
 > A browser-based RC car project powered by ESP32-C3, featuring real-time control through an intuitive web interface with virtual joystick controls. Available in both single-board and dual-board configurations.
 
 ---
@@ -9,25 +12,73 @@
 ## Features
 
 ### Core Features
-- Browser-based control interface
-- Virtual joystick with touch/mouse support
-- Wi-Fi AP mode for direct connection
-- Real-time motor control
-- Precision turn control
+- Dual operation modes: Default (2-wheel) and Omni (4-wheel) drive
+- Mode switching via hardware switch
+- Browser-based control interface with virtual joystick
+- Real-time motor control and status monitoring
+- ESP-NOW communication for reliable control
 - Emergency stop function
-
-### Advanced Features
 - Individual wheel speed tuning
-- Live status monitoring
-- Dual-board long-range option
-- ESP-NOW peer-to-peer support
 
-## Quick Start
+### Communication Options
+- Single-board WiFi mode
+  - Direct WiFi AP connection
+  - Browser-based control
+  - Low latency for close range
+- Dual-board ESP-NOW mode
+  - Extended range (100m+)
+  - More reliable connection
+  - No WiFi network required
+  - Split control/drive functionality
 
-1. Flash the code to your ESP32-C3
-2. Power up the car
-3. Connect to Wi-Fi network "Web RC Car"
-4. Navigate to `192.168.1.101` in your browser
+## Setup Guide
+
+### Option 1: Single ESP32 Setup (Simpler)
+1. Choose your desired mode and flash the corresponding code:
+   - For Default mode: Flash `default/default.ino`
+   - For Omni mode: Flash `omni/omni.ino`
+2. Wire motors according to pin configuration
+3. Power up the system
+4. Connect to WiFi AP "Web RC Car"
+5. Navigate to `192.168.1.101` in browser
+
+### Option 2: Dual ESP32 Setup (Advanced)
+Requires two ESP32 boards - one for control, one for the car.
+
+#### Controller Options:
+A. Basic Controller:
+   - Flash `control.ino` to controller ESP32
+   - Simple setup, fixed control mode
+
+B. Advanced Controller (with mode switching):
+   - Flash `master_control.ino` to controller ESP32
+   - Requires additional wiring:
+     * Mode switch to PIN 5
+     * OLED display (SDA: 3, SCL: 4)
+   - Allows real-time mode switching
+
+#### Car Setup (Required for both controller options):
+1. Flash `drive.ino` to car's ESP32
+2. Wire motors according to pin config
+3. Configure MAC addresses:
+   - Set receiving MAC in drive board
+   - Set corresponding MAC in controller
+
+#### Usage:
+1. Power up both boards
+2. Connect to controller's WiFi:
+   - Basic: "Web RC Car"
+   - Advanced: "RC Default Mode" or "RC Omni Mode"
+3. Navigate to `192.168.1.101`
+4. If using advanced controller, use switch to toggle modes
+
+### Mode Selection (Dual ESP Setup)
+- Default Mode (2-wheel): Switch LOW
+  - Standard differential steering
+  - Forward/reverse with turning
+- Omni Mode (4-wheel): Switch HIGH
+  - Full directional control
+  - Rotation while moving
 
 ## Architecture
 
@@ -80,6 +131,21 @@ Browser (Web Interface) → WebSocket → Control Board → ESP-NOW → Drive Bo
 ```
 User Input → JSON Command → ESP-NOW Packet → Motor Signal → Physical Movement
 ```
+
+## Master Controller
+
+<table>
+<tr>
+<td width="50%">
+The file <code>master_control.ino</code> manages both Omni and Default modes
+through ESP-NOW communication. Default mode now also supports direct
+ESP-NOW control to the drive board.
+</td>
+<td width="50%">
+<img src="docs/demo.gif" width="100%" alt="RC Car Demo">
+</td>
+</tr>
+</table>
 
 ## Hardware Requirements
 
