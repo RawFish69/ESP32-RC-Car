@@ -16,10 +16,11 @@
 #define MOTOR_MIN_PWM 300
 #define MOTOR_MAX_PWM 1023
 
-// Control board mac address
+// Control board mac address, use STA
 // E4:B3:23:D2:D1:5C (STA)
 // E4:B3:23:D2:D1:5D (SoftAP)
-uint8_t CONTROL_BOARD_MAC[] = {0xE4, 0xB3, 0x23, 0xD2, 0xD1, 0x5C};
+
+uint8_t CONTROL_BOARD_MAC[] = {0xE4, 0xB3, 0x23, 0xD3, 0x66, 0xB8};
 
 // 15s no packets => EStop + reboot
 static const unsigned long NO_PACKET_TIMEOUT_MS = 15000;
@@ -288,5 +289,5 @@ void loop() {
       ESP.restart();
     }
   }
-  delay(20);
+  delay(100);
 }

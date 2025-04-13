@@ -126,6 +126,7 @@ void loop() {
         serverPrevTime = currentMillis;
     }
     updateMotorSignals();
+    delay(50); // Small delay to prevent CPU overload
 }
 
 void handleRoot() {

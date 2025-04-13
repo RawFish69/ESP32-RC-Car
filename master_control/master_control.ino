@@ -399,5 +399,5 @@ void loop() {
     delay(300);
     initWiFiAndEspNow();
   }
-  delay(10);
+  delay(100);
 }
