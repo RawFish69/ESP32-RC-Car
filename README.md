@@ -2,265 +2,133 @@
 
 [![Arduino](https://img.shields.io/badge/Arduino-IDE-00979D.svg?style=for-the-badge&logo=Arduino&logoColor=white)](https://www.arduino.cc/)
 [![ESP32](https://img.shields.io/badge/ESP32-C3-E7352C.svg?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/)
-[![ESP32](https://img.shields.io/badge/ESP32-any-000000.svg?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/en/products/modules/esp32)
 [![ESP-NOW](https://img.shields.io/badge/ESP--NOW-Protocol-green.svg?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/en/products/software/esp-now/overview)
-
-> A browser-based RC car project powered by ESP32-C3, featuring real-time control through an intuitive web interface with virtual joystick controls. Available in both single-board and dual-board configurations.
 
 ---
 
-## Features
-
-### Core Features
-- Dual operation modes: Default (2-wheel) and Omni (4-wheel) drive
-- Mode switching via hardware switch
-- Browser-based control interface with virtual joystick
-- Real-time motor control and status monitoring
-- ESP-NOW communication for reliable control
-- Emergency stop function
-- Individual wheel speed tuning
-
-### Communication Options
-- Single-board WiFi mode
-  - Direct WiFi AP connection
-  - Browser-based control
-  - Low latency for close range
-- Dual-board ESP-NOW mode
-  - Extended range (100m+)
-  - More reliable connection
-  - No WiFi network required
-  - Split control/drive functionality
-
-## Setup Guide
-
-### Option 1: Single ESP32 Setup (Simpler)
-1. Choose your desired mode and flash the corresponding code:
-   - For Default mode: Flash `default/default.ino`
-   - For Omni mode: Flash `omni/omni.ino`
-2. Wire motors according to pin configuration
-3. Power up the system
-4. Connect to WiFi AP "Web RC Car"
-5. Navigate to `192.168.1.101` in browser
-
-### Option 2: Dual ESP32 Setup (Advanced)
-Requires two ESP32 boards - one for control, one for the car.
-
-#### Controller Options:
-A. Basic Controller:
-   - Flash `control.ino` to controller ESP32
-   - Simple setup, fixed control mode
-
-B. Advanced Controller (with mode switching):
-   - Flash `master_control.ino` to controller ESP32
-   - Requires additional wiring:
-     * Mode switch to PIN 5
-     * OLED display (SDA: 3, SCL: 4)
-   - Allows real-time mode switching
-
-#### Car Setup (Required for both controller options):
-1. Flash `drive.ino` to car's ESP32
-2. Wire motors according to pin config
-3. Configure MAC addresses:
-   - Set receiving MAC in drive board
-   - Set corresponding MAC in controller
-
-#### Usage:
-1. Power up both boards
-2. Connect to controller's WiFi:
-   - Basic: "Web RC Car"
-   - Advanced: "RC Default Mode" or "RC Omni Mode"
-3. Navigate to `192.168.1.101`
-4. If using advanced controller, use switch to toggle modes
-
-### Mode Selection (Dual ESP Setup)
-- Default Mode (2-wheel): Switch LOW
-  - Standard differential steering
-  - Forward/reverse with turning
-- Omni Mode (4-wheel): Switch HIGH
-  - Full directional control
-  - Rotation while moving
-
-## Architecture
-
-### Single-Board Version
-```
-┌─────────────┐     ┌──────────────┐     ┌───────────┐
-│  Browser    │ WS  │   ESP32-C3   │ PWM │   Motors  │
-│  Interface  │◄───►│  Web Server  │────►│   Driver  │
-└─────────────┘     └──────────────┘     └───────────┘
-```
-
-### Dual-Board Version
-```
-┌─────────────┐     ┌──────────────┐     ┌──────────────┐     ┌───────────┐
-│  Browser    │ WS  │   Control    │     │    Drive     │ PWM │   Motors  │
-│  Interface  │◄───►│    Board     │◄───►│    Board     │────►│   Driver  │
-└─────────────┘     └──────────────┘     └──────────────┘     └───────────┘
-                          WiFi              ESP-NOW
-```
-
-### Component Overview
-
-1. **Web Interface** (`web_interface.cpp`)
-    - HTML/CSS layout
-    - JavaScript joystick controls
-    - WebSocket client
-    - Real-time status display
-    - UI event handling
-
-2. **Control Board** (`control.ino`)
-    - Web server hosting
-    - User interface handling
-    - ESP-NOW transmitter
-    - OLED display updates
-    - Connection management
-
-3. **Drive Board** (`drive.ino`)
-    - ESP-NOW receiver
-    - Motor control logic
-    - Failsafe handling
-    - Automatic reconnection
-    - Status monitoring
-
-### Communication Flow
-```
-Browser (Web Interface) → WebSocket → Control Board → ESP-NOW → Drive Board → Motors
-```
-
-### Data Flow
-```
-User Input → JSON Command → ESP-NOW Packet → Motor Signal → Physical Movement
-```
-
-## Master Controller
-
-<img src="docs/demo.gif" width="100%" alt="RC Car Demo">
-
-The file <code>master_control.ino</code> manages both Omni and Default modes
-through ESP-NOW communication. Default mode now also supports direct
-ESP-NOW control to the drive board.
-
-## Hardware Requirements
-
-- ESP32-C3-Mini development board
-- Dual H-Bridge motor driver
-- 2x / 4x DC motors with wheels 
-- LiPo battery or AA batteries
-- Chassis (3D printed, Laser Cut parts, etc)
-- Basic electronic components
-- Soldering is optional
-
-## Vehicle Builds
+## V2 — LiDAR Bot
 
 <table>
 <tr>
 <td width="50%">
-
-### Omni-Drive Version
-<img src="docs/omni_build.jpg" alt="RC Car Omni Drive">
-*4-wheel omni-directional drive configuration*
-
+<img src="docs/demo_2.gif" width="100%" alt="Robot moving while mapping surroundings with LiDAR">
+<em>Robot driving while mapping its surroundings with the LD06 LiDAR</em>
 </td>
 <td width="50%">
-
-### Standard Version
-<img src="docs/car.jpg" alt="RC Car Default">
-*2-wheel differential drive configuration*
-
+<img src="docs/lidar_bot.jpg" width="100%" alt="V2 LiDAR Bot">
+<em>V2 LiDAR Bot</em>
 </td>
 </tr>
 </table>
 
-## Pin Configuration
+A simple ESP32 RC car anyone can build. Two TT motors, a TB6612FNG motor driver, and an LD06 LiDAR. Two modes: **manual drive** and **basic wander**.
 
-### Default Version (2-Wheel Drive)
-| Pin | Function |
-|-----|----------|
-| 7   | Left Motor PWM |
-| 0   | Right Motor PWM |
-| 8   | Left Motor Forward |
-| 9   | Left Motor Reverse |
-| 4   | Right Motor Forward |
-| 3   | Right Motor Reverse |
+### Hardware
 
-### Omni Version (4-Wheel Drive)
-| Motor          | Enable Pin (PWM) | Direction 1 | Direction 2 |
-|----------------|------------------|-------------|-------------|
-| Left Front     | 5               | 6           | 7           |
-| Right Front    | 20              | 21          | 3           |
-| Left Back      | 8               | 9           | 10          |
-| Right Back     | 2               | 1           | 0           |
+**Required:**
+- ESP32-C3
+- TB6612FNG dual motor driver
+- 2x TT motors
+- 5V USB power bank (ESP32) + AA battery pack (motors, 6V VM)
 
-## Dual-Board Version
+**Optional:**
+- LD06 LiDAR
+- IMU
+- Motor encoders
 
-An alternative version using two ESP32 boards with ESP-NOW communication:
+### Modes
 
-### Features
-- Long-range control (hundreds of meters)
-- Direct peer-to-peer communication
-- No WiFi network required
-- Split control and drive functionality
-- More reliable communication
+| Key | Mode |
+|-----|------|
+| `1` | Manual drive (teleop via controller) |
+| `4` | Basic wander — LiDAR obstacle avoidance |
+| `x` | Stop |
 
-### Components
-- Control Board: Handles web interface and user input
-- Drive Board: Controls motors and receives commands
-- ESP-NOW protocol for board-to-board communication
+In basic wander mode the bot drives forward, scans all sectors with the LD06, and avoids walls with reverse-and-spin escapes. The stuck detector triggers an unstuck maneuver if the bot stops making progress.
 
-### Benefits
-- Separation of concerns
-- Extended range capability
-- Reduced latency
-- More reliable motor control
-- Independent WiFi and control systems
+### Wiring — Bot
 
-The code for this version is in:
-- `control.ino`: Web interface and ESP-NOW transmitter
-- `drive.ino`: Motor control and ESP-NOW receiver
+| LD06 | ESP32-C3 |
+|------|----------|
+| TX   | GPIO 0   |
+| RX   | GPIO 1   |
+| GND  | GND      |
 
-## Web Interface
+| TB6612FNG | ESP32-C3 |
+|-----------|----------|
+| PWMA      | GPIO 4   |
+| AIN1      | GPIO 6   |
+| AIN2      | GPIO 5   |
+| BIN1      | GPIO 7   |
+| BIN2      | GPIO 8   |
+| PWMB      | GPIO 10  |
+| STBY      | tie HIGH |
 
-The interface includes:
-- Interactive joystick
-- Real-time wheel speed indicators
-- Quick control buttons
-- Fine-tuning controls
-- Status monitoring panel
+### Flashing
 
-## Supporting Documentation
+Flash each sketch to its board:
 
-### Design Files
-<img src="docs/chasis.png" width="400" alt="CAD Model">
-*3D CAD model of chassis*
+- `v2/Bot/Bot.ino` → bot ESP32-C3
+- `v2/Controller/Controller.ino` → controller ESP32-C3
 
-### Control Display
-<img src="docs/control_oled.jpg" width="300" alt="OLED Display">
-*OLED status display on control board*
+Set `kBotMac` in `Controller.ino` to match the bot's MAC address (printed on boot via serial).
 
-### Wiring Diagrams
-<img src="docs/omni_wiring.jpg" width="400" alt="Omni Circuit Schematic">
-*Omni version wiring*
+### Controller (ESP-NOW + USB)
 
-<img src="docs/circuit.jpg" width="400" alt="Default Circuit Schematic">
-*Default version wiring*
+The controller bridges your PC to the bot over ESP-NOW. Plug the **controller** into USB and run either host tool.
 
-## Technical Details
+**Serial commands (460800 baud):**
 
-### Motor Control
-- 10-bit PWM resolution (0-1023)
-- 50Hz PWM frequency
-- Minimum PWM threshold for reliable start
-- Individual wheel speed tuning
-- Proportional turn control
+| Key | Action |
+|-----|--------|
+| `1` | Manual mode |
+| `4` | Autonomous mode |
+| `x` | Stop |
+| `w s a d q e` | Drive in manual mode |
+| `Lf200` / `Rb150` / `Ls` | Direct motor command |
 
-### Network Configuration
-- AP Mode: `Web RC Car`
-- IP: 192.168.1.101
-- No password required
-- Optimized for low latency
+### Host Tools (`v2/py_scripts/`)
 
-## Performance Tuning
+Two Python tools — plug into the **controller** board.
 
-1. **Motor Dead Zone**: Adjust `MOTOR_MIN_PWM` if motors don't start smoothly
-2. **Turn Sensitivity**: Modify the turn rate mapping in the web interface
-3. **Wheel Balance**: Use the tuning sliders to compensate for motor differences
+**Install:**
+```bash
+pip install viser pyserial numpy
+```
+
+**Lidar viewer:**
+```bash
+cd v2/py_scripts
+python -m lidar --port COMx --baud 460800
+```
+Open `http://localhost:8080` for a live point cloud.
+
+**Teleop with viewer:**
+```bash
+cd v2/py_scripts
+python -m teleop --port COMx --baud 460800
+```
+
+Replace `COMx` with the controller's port (e.g. `COM5` on Windows, `/dev/ttyUSB0` on Linux).
+
+### Data Flow
+
+```
+PC → Controller (USB serial) → ESP-NOW → Bot → motors
+Bot → ESP-NOW → Controller → USB serial → host viewer
+```
+
+---
+
+## V1 — ESP32-C3 RC Car
+
+<img src="docs/chasis.png" width="400" alt="V1 Chassis">
+
+The original browser-based RC car. Supports 2-wheel differential and 4-wheel omni drive, single-board WiFi or dual-board ESP-NOW. All code is in [`v1/`](v1/).
+
+See the V1 source folders for setup details:
+- `v1/default/` — single-board builds for ESP32-C3, C3-mini, and generic ESP32
+- `v1/omni/` — omni-directional drive builds
+- `v1/master_control/` — dual-board master controller with OLED and mode switch
+- `v1/joystick_control/` — physical joystick controller
+- `v1/mac_reader/` — utility to read ESP32 MAC address
